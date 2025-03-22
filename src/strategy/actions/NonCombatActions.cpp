@@ -113,7 +113,6 @@ bool EatAction::isPossible()
     if (healthPct >= 85 || manaPct >= 95)
     {
         // Stop the eating process if it's already in progress
-        bot->RemoveAura(24707, bot);                      // Remove the food/drink aura if applied
         bot->SetStandState(UNIT_STAND_STATE_STAND);  // Cancel sit animation
 
         return false;  // Interrupt eating action
