@@ -36,7 +36,6 @@ bool DrinkAction::Execute(Event event)
 
         // float hp = bot->GetHealthPercent();
         float mp = bot->GetPowerPct(POWER_MANA);
-        float hp = bot->GetHealthPct();
         float p = mp;
         float delay;
 
@@ -51,15 +50,6 @@ bool DrinkAction::Execute(Event event)
         return true;
         // return botAI->CastSpell(24707, bot);
     }
-
-    else if hp >= 85 || mp >= 95)
-    {
-        // Stop the eating process if it's already in progress
-        bot->SetStandState(UNIT_STAND_STATE_STAND);  // Cancel sit animation
-
-        return false;  // Interrupt eating action
-    }
-
 
     return UseItemAction::Execute(event);
 }
@@ -95,7 +85,7 @@ bool EatAction::Execute(Event event)
         botAI->InterruptSpell();
 
         float hp = bot->GetHealthPct();
-        float mp = bot->GetPowerPct(POWER_MANA);
+        // float mp = bot->HasMana() ? bot->GetPowerPercent() : 0.f;
         float p = hp;
         float delay;
 
@@ -109,13 +99,6 @@ bool EatAction::Execute(Event event)
         bot->AddAura(24707, bot);
         return true;
     }
-    else if (hp >= 85 || mp >= 95)
-        {
-            // Stop the eating process if it's already in progress
-            bot->SetStandState(UNIT_STAND_STATE_STAND);  // Cancel sit animation
-
-            return false;  // Interrupt eating action
-        }
 
     return UseItemAction::Execute(event);
 }
