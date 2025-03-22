@@ -19,22 +19,16 @@ bool DrinkAction::Execute(Event event)
 
     if (sPlayerbotAIConfig->freeFood)
     {
-        // if (bot->IsNonMeleeSpellCast(true))
-        //     return false;
-
         bot->ClearUnitState(UNIT_STATE_CHASE);
         bot->ClearUnitState(UNIT_STATE_FOLLOW);
 
         if (bot->isMoving())
         {
             bot->StopMoving();
-            // botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
-            // return false;
         }
         bot->SetStandState(UNIT_STAND_STATE_SIT);
         botAI->InterruptSpell();
 
-        // float hp = bot->GetHealthPercent();
         float mp = bot->GetPowerPct(POWER_MANA);
         float p = mp;
         float delay;
@@ -46,9 +40,31 @@ bool DrinkAction::Execute(Event event)
 
         botAI->SetNextCheckDelay(delay);
 
+        // Apply the aura (food/drink)
         bot->AddAura(24707, bot);
+
+        // **NEW CODE: Check mana during the action**
+        while (bot->GetPowerPct(POWER_MANA) < 90)
+        {
+            // Wait a short time to avoid busy-waiting
+            botAI->Sleep(500);  // Sleep for 500 milliseconds (0.5 seconds)
+
+            // Re-check mana.  Important to re-evaluate inside the loop.
+            if (bot->GetPowerPct(POWER_MANA) >= 90)
+            {
+                // Stop drinking if mana is high enough
+                bot->RemoveAura(24707, bot);                 // Remove the aura
+                bot->SetStandState(UNIT_STAND_STATE_STAND);  // Stand up
+                botAI->ClearNextCheckDelay();                // Reset the delay
+                return true;                                 // Action completed successfully
+            }
+        }
+
+        // If the loop finishes without interruption, it means mana reached 100%
+        bot->RemoveAura(24707, bot);
+        bot->SetStandState(UNIT_STAND_STATE_STAND);
+        botAI->ClearNextCheckDelay();
         return true;
-        // return botAI->CastSpell(24707, bot);
     }
 
     return UseItemAction::Execute(event);
@@ -68,24 +84,18 @@ bool EatAction::Execute(Event event)
 
     if (sPlayerbotAIConfig->freeFood)
     {
-        // if (bot->IsNonMeleeSpellCast(true))
-        //     return false;
-
         bot->ClearUnitState(UNIT_STATE_CHASE);
         bot->ClearUnitState(UNIT_STATE_FOLLOW);
 
         if (bot->isMoving())
         {
             bot->StopMoving();
-            // botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
-            // return false;
         }
 
         bot->SetStandState(UNIT_STAND_STATE_SIT);
         botAI->InterruptSpell();
 
         float hp = bot->GetHealthPct();
-        // float mp = bot->HasMana() ? bot->GetPowerPercent() : 0.f;
         float p = hp;
         float delay;
 
@@ -96,7 +106,30 @@ bool EatAction::Execute(Event event)
 
         botAI->SetNextCheckDelay(delay);
 
+        // Apply the aura (food/drink)
         bot->AddAura(24707, bot);
+
+        // **NEW CODE: Check health during the action**
+        while (bot->GetHealthPct() < 90)
+        {
+            // Wait a short time to avoid busy-waiting
+            botAI->Sleep(500);  // Sleep for 500 milliseconds (0.5 seconds)
+
+            // Re-check health.  Important to re-evaluate inside the loop.
+            if (bot->GetHealthPct() >= 90)
+            {
+                // Stop eating if health is high enough
+                bot->RemoveAura(24707, bot);                 // Remove the aura
+                bot->SetStandState(UNIT_STAND_STATE_STAND);  // Stand up
+                botAI->ClearNextCheckDelay();                // Reset the delay
+                return true;                                 // Action completed successfully
+            }
+        }
+
+        // If the loop finishes without interruption, it means health reached 100%
+        bot->RemoveAura(24707, bot);
+        bot->SetStandState(UNIT_STAND_STATE_STAND);
+        botAI->ClearNextCheckDelay();
         return true;
     }
 
