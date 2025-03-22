@@ -109,3 +109,12 @@ bool EatAction::isPossible()
 {
     return !bot->IsInCombat() && (sPlayerbotAIConfig->freeFood || UseItemAction::isPossible());
 }
+
+    if (healthPct >= 85 || manaPct >= 95)
+    {
+        // Stop the eating process if it's already in progress
+        bot->RemoveAura(24707);                      // Remove the food/drink aura if applied
+        bot->SetStandState(UNIT_STAND_STATE_STAND);  // Cancel sit animation
+
+        return false;  // Interrupt eating action
+    }
