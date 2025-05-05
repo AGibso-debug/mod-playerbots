@@ -19,42 +19,45 @@ bool DrinkAction::Execute(Event event)
 
     if (sPlayerbotAIConfig->freeFood)
     {
-        // if (bot->IsNonMeleeSpellCast(true))
-        //     return false;
-
         bot->ClearUnitState(UNIT_STATE_CHASE);
         bot->ClearUnitState(UNIT_STATE_FOLLOW);
 
         if (bot->isMoving())
-        {
             bot->StopMoving();
-            // botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
-            // return false;
-        }
+
         bot->SetStandState(UNIT_STAND_STATE_SIT);
+
         botAI->InterruptSpell();
 
-        // float hp = bot->GetHealthPercent();
         float mp = bot->GetPowerPct(POWER_MANA);
         float p = mp;
         float delay;
-
+        float manaRate = sWorld->getRate(RATE_POWER_MANA);
+        float baseDelay;
         if (!bot->InBattleground())
-            delay = 27000.0f * (100 - p) / 100.0f;
+            baseDelay = 30000.0f * (100 - p) / 100.0f;
         else
-            delay = 20000.0f * (100 - p) / 100.0f;
+            baseDelay = 23000.0f * (100 - p) / 100.0f;
+
+        delay = baseDelay / manaRate;
+
+        // This formula calculates a delay that adjusts based on the current mana percentage and the server's mana
+        // regeneration rate. It aims to make the bot drink for a shorter duration when mana regeneration
+        // is faster, and for a longer duration when mana regeneration is slower.
+
+        float minDelay = 1000.0f;
+        delay = std::max(delay, minDelay);
 
         botAI->SetNextCheckDelay(delay);
 
         bot->AddAura(24707, bot);
         return true;
-        // return botAI->CastSpell(24707, bot);
     }
 
     return UseItemAction::Execute(event);
 }
 
-bool DrinkAction::isUseful() { return UseItemAction::isUseful() && AI_VALUE2(uint8, "mana", "self target") < 85; }
+bool DrinkAction::isUseful() { return UseItemAction::isUseful() && AI_VALUE2(uint8, "mana", "self target") < 75; }
 
 bool DrinkAction::isPossible()
 {
@@ -68,31 +71,33 @@ bool EatAction::Execute(Event event)
 
     if (sPlayerbotAIConfig->freeFood)
     {
-        // if (bot->IsNonMeleeSpellCast(true))
-        //     return false;
-
         bot->ClearUnitState(UNIT_STATE_CHASE);
         bot->ClearUnitState(UNIT_STATE_FOLLOW);
 
         if (bot->isMoving())
-        {
             bot->StopMoving();
-            // botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
-            // return false;
-        }
 
         bot->SetStandState(UNIT_STAND_STATE_SIT);
         botAI->InterruptSpell();
 
         float hp = bot->GetHealthPct();
-        // float mp = bot->HasMana() ? bot->GetPowerPercent() : 0.f;
         float p = hp;
         float delay;
-
+        float healthRate = sWorld->getRate(RATE_HEALTH);
+        float baseDelay;
         if (!bot->InBattleground())
-            delay = 27000.0f * (100 - p) / 100.0f;
+            baseDelay = 30000.0f * (100 - p) / 100.0f;
         else
-            delay = 20000.0f * (100 - p) / 100.0f;
+            baseDelay = 23000.0f * (100 - p) / 100.0f;
+
+        delay = baseDelay / healthRate;
+
+        // This formula calculates a delay that adjusts based on the current health percentage and the server's health
+        // regeneration rate. It aims to make the bot eat for a shorter duration when health regeneration
+        // is faster, and for a longer duration when health regeneration is slower.
+       
+        float minDelay = 1000.0f;
+        delay = std::max(delay, minDelay);
 
         botAI->SetNextCheckDelay(delay);
 
@@ -103,7 +108,7 @@ bool EatAction::Execute(Event event)
     return UseItemAction::Execute(event);
 }
 
-bool EatAction::isUseful() { return UseItemAction::isUseful() && AI_VALUE2(uint8, "health", "self target") < 85; }
+bool EatAction::isUseful() { return UseItemAction::isUseful() && AI_VALUE2(uint8, "health", "self target") < 75; }
 
 bool EatAction::isPossible()
 {
