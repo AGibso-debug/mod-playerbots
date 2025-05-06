@@ -37,7 +37,7 @@ bool DrinkAction::Execute(Event event)
         if (!bot->InBattleground())
             baseDelay = 30000.0f * (100 - p) / 100.0f;
         else
-            baseDelay = 23000.0f * (100 - p) / 100.0f;
+            baseDelay = 30000.0f * (100 - p) / 100.0f;
 
         delay = baseDelay / manaRate;
 
@@ -88,7 +88,7 @@ bool EatAction::Execute(Event event)
         if (!bot->InBattleground())
             baseDelay = 30000.0f * (100 - p) / 100.0f;
         else
-            baseDelay = 23000.0f * (100 - p) / 100.0f;
+            baseDelay = 30000.0f * (100 - p) / 100.0f;
 
         delay = baseDelay / healthRate;
 
